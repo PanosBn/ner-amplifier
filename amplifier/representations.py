@@ -20,11 +20,20 @@ class Token:
     def get_ner_tag(self):
         return self.ner_tag
 
+    def get_pos_tag(self):
+        return self.pos_tag
+
+    def __iter__(self):
+        return iter(self.word)
+
+    def __str__(self):
+        return f"{self.word}"
+
     def __len__(self):
         return len(self.word)
 
     def __repr__(self):
-        return f"Token(word='{self.word}', tag='{self.ner_tag}')"
+        return f"Token(word='{self.word}', tag='{self.ner_tag}' )"
 
 
 class Sentence:
@@ -33,6 +42,19 @@ class Sentence:
 
     def add_token(self, token):
         self.tokens.append(token)
+
+    def __str__(self):
+        reconstructed_sentence = ""
+        for i, token in enumerate(self.tokens):
+            if i > 0 and not token.get_word().startswith(
+                ("'", '"', ".", ",", ";", ":", "!", "?", "-", "”", "“", ")", "]", "}")
+            ):
+                reconstructed_sentence += " "
+            reconstructed_sentence += token.get_word()
+        return f"{reconstructed_sentence}"
+
+    def __iter__(self):
+        return iter(self.tokens)
 
     def __len__(self):
         return len(self.tokens)
@@ -62,9 +84,7 @@ class Corpus:
             for token_line in line.split("\n"):
                 if token_line.strip() == "" or token_line.startswith("-DOCSTART-"):
                     continue
-                columns = (
-                    token_line.split()
-                )  # Split by spaces if your data is space-separated
+                columns = token_line.split()
                 if len(columns) > max(text_column_index, ner_column_index):
                     word = columns[text_column_index]
                     ner_tag = columns[ner_column_index]
@@ -74,11 +94,11 @@ class Corpus:
 
         logging.info(f"{len(self.sentences)} sentences loaded into the corpus.")
 
-    def __repr__(self):
-        return f"Corpus(sentences={self.sentences})"
-
     def filter_empty_sentences(self):
         self.sentences = [sentence for sentence in self.sentences if len(sentence) > 0]
+
+    def __repr__(self):
+        return f"Corpus(sentences={self.sentences})"
 
     def __len__(self):
         return len(self.sentences)
