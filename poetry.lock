@@ -1177,6 +1177,24 @@ doc = ["jupytext", "matplotlib (>2)", "myst-nb", "numpydoc", "pooch", "pydata-sp
 test = ["asv", "gmpy2", "mpmath", "pooch", "pytest", "pytest-cov", "pytest-timeout", "pytest-xdist", "scikit-umfpack", "threadpoolctl"]
 
 [[package]]
+name = "sense2vec"
+version = "2.0.2"
+description = "Contextually-keyed word vectors"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "sense2vec-2.0.2-py2.py3-none-any.whl", hash = "sha256:f2a5e0b55038e599317e6dc40dae30a24f00277976a05d37035e7acaf08fc727"},
+    {file = "sense2vec-2.0.2.tar.gz", hash = "sha256:c7df6f89f74d83ed13c85998fe5792e836f7971e099af955211a6adefabaa768"},
+]
+
+[package.dependencies]
+catalogue = ">=2.0.1,<2.1.0"
+numpy = ">=1.15.0"
+spacy = ">=3.0.0,<4.0.0"
+srsly = ">=2.4.0,<3.0.0"
+wasabi = ">=0.8.1,<1.2.0"
+
+[[package]]
 name = "setuptools"
 version = "69.0.2"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
@@ -1300,6 +1318,26 @@ ko = ["natto-py (>=0.9.0)"]
 lookups = ["spacy-lookups-data (>=1.0.3,<1.1.0)"]
 th = ["pythainlp (>=2.0)"]
 transformers = ["spacy-transformers (>=1.1.2,<1.4.0)"]
+
+[[package]]
+name = "spacy-conll"
+version = "3.4.0"
+description = "A custom pipeline component for spaCy that can convert any parsed Doc and its sentences into CoNLL-U format. Also provides a command line entry point."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "spacy_conll-3.4.0-py3-none-any.whl", hash = "sha256:740bf6f2d4ab160c5730f95117b2fd8e4b1807d9311855dea5e2042236dee432"},
+    {file = "spacy_conll-3.4.0.tar.gz", hash = "sha256:e037b0a7522248fdba7664245d4e9a4b198e41a1662f8105b1617dc7a1aa5dbf"},
+]
+
+[package.dependencies]
+spacy = ">=3.0.1"
+
+[package.extras]
+all = ["pandas", "spacy-stanza (>=1.0.0)", "spacy-udpipe (>=1.0.0)"]
+dev = ["black", "flake8", "isort", "pandas", "pygments", "pytest", "spacy-stanza (>=1.0.0)", "spacy-udpipe (>=1.0.0)"]
+parsers = ["spacy-stanza (>=1.0.0)", "spacy-udpipe (>=1.0.0)"]
+pd = ["pandas"]
 
 [[package]]
 name = "spacy-legacy"
@@ -1588,4 +1626,4 @@ wasabi = ">=0.9.1,<1.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "8b5e55d79fb2e1a4b2e8137719ed0f6fb7099a8b1f2ad473b3a0950cf308042a"
+content-hash = "09f1f7b08a36866c826bbb1c944784daf9b8e17b6903d9a82e146de027d71a0a"

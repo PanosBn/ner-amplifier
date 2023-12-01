@@ -17,10 +17,10 @@ class Token:
     def set_word(self, word: str):
         self.word = word
 
-    def get_ner_tag(self):
+    def get_ner_tag(self) -> str:
         return self.ner_tag
 
-    def get_pos_tag(self):
+    def get_pos_tag(self) -> str:
         return self.pos_tag
 
     def __iter__(self):
