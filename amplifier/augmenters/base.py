@@ -3,12 +3,12 @@ from pathlib import Path
 from typing import Union
 
 import numpy as np
-import spacy_conll
 from nltk.corpus import wordnet
 from sense2vec import Sense2Vec
 from spacy.language import Language
 
 from amplifier.representations import Corpus, Sentence
+from amplifier.utils import conll_2003_tokenizer
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -66,11 +66,18 @@ class NounAugmenter:
     def _process_sentence(self, sentence: Sentence, method: str):
         doc = self.nlp(f"{sentence}")
 
+        # self.nlp.tokenizer = conll_2003_tokenizer(self.nlp)
+
+        # logging.info(self.nlp.tokenizer.explain(f"{sentence}"))
+        # logging.info(self.nlp.tokenizer.explain(f"{doc}"))
+        print([token.text for token in doc])
+        print([token.get_word() for token in sentence.tokens])
         if len(doc) != len(sentence.tokens):
+            logging.info(f"SpaCy sentence: {doc} length: {len(doc)}")
             logging.info(
                 f"Original sentence: {sentence} length: {len(sentence.tokens)}"
             )
-            logging.info(f"SpaCy sentence: {doc} length: {len(doc)}")
+
             raise ValueError(
                 "The token count from SpaCy does not match the original sentence."
             )
