@@ -10,12 +10,19 @@ logging.basicConfig(
 class Token:
     def __init__(self, **attributes):
         self.attributes = attributes
+        self.attributes["augmented"] = self.attributes.get("word")
 
     def get_attribute(self, attr):
         return self.attributes.get(attr, None)
 
     def set_attribute(self, attr, value):
         self.attributes[attr] = value
+
+    def set_augmented(self, augmented_word):
+        self.attributes["augmented"] = augmented_word
+
+    def get_ner_tag(self):
+        return self.get_attribute("ner")
 
     def __str__(self):
         return self.get_attribute("word")
@@ -91,6 +98,9 @@ class Corpus:
             for token, spacy_token in zip(sentence.tokens, doc):
                 if token.get_attribute("pos") is None:
                     token.set_attribute("pos", spacy_token.pos_)
+
+    def add_sentence(self, sentence):
+        self.sentences.append(sentence)
 
     def filter_empty_sentences(self):
         self.sentences = [sentence for sentence in self.sentences if len(sentence) > 0]
