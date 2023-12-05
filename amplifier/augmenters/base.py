@@ -4,14 +4,12 @@ from typing import Union
 
 import numpy as np
 from nltk.corpus import wordnet
-from sense2vec import Sense2Vec
-from spacy.language import Language
+from tqdm import tqdm
 
 from amplifier.representations import Corpus, Sentence
-from amplifier.utils import conll_2003_tokenizer
 
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 
@@ -23,6 +21,12 @@ class NounAugmenter:
     def noun_augment_sense2vec(
         self, text: Sentence | Corpus, model_path: Union[Path, str]
     ):
+        """
+        Augment nouns in the text with sense2vec.
+        :param text: Sentence or Corpus object
+        :param model_path: Path to the sense2vec model
+
+        """
         from sense2vec import Sense2Vec
 
         path = Path(model_path)
@@ -32,7 +36,7 @@ class NounAugmenter:
         if isinstance(text, Sentence):
             self._process_sentence(text, method="sense2vec", model=s2v)
         elif isinstance(text, Corpus):
-            for sentence in text.sentences:
+            for sentence in tqdm(text.sentences, desc="Augmenting with Sense2Vec"):
                 self._process_sentence(sentence, method="sense2vec", model=s2v)
         else:
             raise TypeError("Expected a Sentence or Corpus object.")
@@ -42,21 +46,31 @@ class NounAugmenter:
     ):
         from gensim.models import KeyedVectors
 
+        """
+        Augment nouns in the text with word2vec.
+        :param text: Sentence or Corpus object
+        :param model_path: Path to the word2vec model
+        """
+
         w2v = KeyedVectors.load_word2vec_format(model_path, binary=True)
 
         if isinstance(text, Sentence):
             self._process_sentence(text, method="word2vec", model=w2v)
         elif isinstance(text, Corpus):
-            for sentence in text.sentences:
+            for sentence in tqdm(text.sentences, desc="Augmenting with Word2Vec"):
                 self._process_sentence(sentence, method="word2vec", model=w2v)
         else:
             raise TypeError("Expected a Sentence or Corpus object.")
 
     def noun_augment_wordnet(self, text: Sentence | Corpus):
+        """
+        Augment nouns in the text with WordNet.
+        :param text: Sentence or Corpus object
+        """
         if isinstance(text, Sentence):
             self._process_sentence(text, method="wordnet")
         elif isinstance(text, Corpus):
-            for sentence in text.sentences:
+            for sentence in tqdm(text.sentences, desc="Augmenting with WordNet"):
                 self._process_sentence(sentence, method="wordnet")
         else:
             raise TypeError("Expected a Sentence or Corpus object.")
@@ -69,7 +83,7 @@ class NounAugmenter:
 
             pos_tag = token.get_attribute("pos")
             if (pos_tag == "NOUN" or pos_tag == "PROPN") and ner_tag == "O":
-                augmented_word = original_word  # Default to the original word
+                augmented_word = original_word
 
                 if method == "wordnet":
                     synonyms = [
@@ -79,15 +93,12 @@ class NounAugmenter:
                     single_word_synonyms = [
                         syn for syn in synonyms if "_" not in syn and " " not in syn
                     ]
-                    logging.info(f"Querying wordnet for {original_word}")
-                    logging.info(f"Synonyms are {synonyms}")
                     if single_word_synonyms:
                         augmented_word = np.random.choice(single_word_synonyms)
 
                 elif method == "sense2vec":
                     query = str(original_word + "|NOUN")
-                    logging.info(f"Querying sense2vec for {query}")
-                    if query in self.s2v:
+                    if query in model:
                         most_similar = model.most_similar(query, n=5)
                         single_word_synonyms = [
                             item[0].split("|")[0]
@@ -108,5 +119,4 @@ class NounAugmenter:
                         if single_word_synonyms:
                             augmented_word = np.random.choice(single_word_synonyms)
 
-                # Set the augmented word
                 token.set_augmented(augmented_word)

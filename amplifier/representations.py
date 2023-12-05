@@ -1,3 +1,4 @@
+import csv
 import logging
 
 import spacy
@@ -62,6 +63,19 @@ class Sentence:
 
 
 class Corpus:
+    """
+    A Corpus object represents a collection of sentences.
+
+    Args:
+        file_path (str): The path to the file containing the corpus data.
+        column_mapping (dict): A dictionary mapping attribute names to column indices in the file.
+
+    Attributes:
+        sentences (list): A list of Sentence objects representing the sentences in the corpus.
+        column_mapping (dict): A dictionary mapping attribute names to column indices.
+        nlp: A spaCy language model for natural language processing.
+    """
+
     def __init__(self, file_path: str, column_mapping: dict):
         self.sentences = []
         self.column_mapping = column_mapping
@@ -104,6 +118,33 @@ class Corpus:
 
     def filter_empty_sentences(self):
         self.sentences = [sentence for sentence in self.sentences if len(sentence) > 0]
+
+    def export_to_conll(self, file_path: str, delimiter="\t"):
+        """
+        Exports the corpus to a file in CONLL format with original tokens replaced by augmented ones.
+
+        Args:
+            file_path (str): The path of the file to write to.
+            delimiter (str, optional): The delimiter to use in the file. Defaults to '\t' for TSV.
+
+        Returns:
+            None
+        """
+        with open(file_path, "w", newline="", encoding="utf-8") as file:
+            writer = csv.writer(file, delimiter=delimiter)
+
+            for sentence in self.sentences:
+                for token in sentence.tokens:
+                    augmented_word = token.get_attribute("augmented")
+                    if augmented_word:
+                        token.set_attribute("word", augmented_word)
+
+                    row = [
+                        token.get_attribute(attr) for attr in self.column_mapping.keys()
+                    ]
+                    writer.writerow(row)
+
+                writer.writerow([])
 
     def __repr__(self):
         return f"Corpus(sentences={self.sentences})"

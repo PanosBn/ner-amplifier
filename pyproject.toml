@@ -14,6 +14,7 @@ numpy = "^1.26.2"
 nltk = "^3.8.1"
 sense2vec = "^2.0.2"
 spacy-conll = "^3.4.0"
+tqdm = "^4.66.1"
 
 
 [tool.poetry.group.dev.dependencies]
