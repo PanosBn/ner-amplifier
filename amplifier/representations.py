@@ -1,5 +1,6 @@
 import csv
 import logging
+from dataclasses import dataclass
 
 import spacy
 
@@ -80,6 +81,7 @@ class Corpus:
         self.sentences = []
         self.column_mapping = column_mapping
         self.nlp = spacy.load("en_core_web_md")
+        self._entity_index = {}
         if file_path:
             self._load_data(file_path)
 
@@ -97,12 +99,24 @@ class Corpus:
                     attr: columns[idx] if idx < len(columns) else None
                     for attr, idx in self.column_mapping.items()
                 }
-                sentence.add_token(Token(**token_data))
+                token = Token(**token_data)
+                sentence.add_token(token)
+                self._update_entity_index(token)
             self._add_pos_tags(sentence)  # Add POS tags if missing
             if sentence.tokens:
                 self.add_sentence(sentence)
 
         logging.info(f"{len(self.sentences)} sentences loaded into the corpus.")
+
+    def _update_entity_index(self, token: Token):
+        ner_tag = token.get_attribute("ner")
+        if ner_tag and ner_tag != "O":
+            if ner_tag not in self._entity_index:
+                self._entity_index[ner_tag] = 0
+            self._entity_index[ner_tag] += 1
+
+    def get_entity_dictionary(self):
+        return self._entity_index
 
     def _add_pos_tags(self, sentence):
         # Check if POS tags are needed
