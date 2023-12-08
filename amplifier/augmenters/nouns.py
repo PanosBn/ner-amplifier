@@ -15,7 +15,7 @@ logging.basicConfig(
 
 class NounAugmenter:
     def __init__(self):
-        logging.info(f"Initialized Noun augmenter.")
+        logging.info("Initialized Noun augmenter.")
         pass
 
     def noun_augment_sense2vec(

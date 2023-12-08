@@ -21,6 +21,7 @@ logging.basicConfig(
 #         if isinstance(text, Sentence):
 #             if random.random() < swap_prob:
 
+
 #         elif isinstance(text, Corpus):
 #             for sentence in tqdm(text.sentences, desc="Swapping entities"):
 #                 if random.random() < swap_prob:

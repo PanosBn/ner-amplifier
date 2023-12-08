@@ -3,6 +3,7 @@ import logging
 from dataclasses import dataclass
 
 import spacy
+from tqdm import tqdm
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -36,12 +37,51 @@ class Token:
         return f"Token({self.attributes})"
 
 
+@dataclass
+class Span:
+    def __init__(self, tokens, start_idx, end_idx):
+        self.tokens = tokens  # A list of Token objects in the span
+        self.start_idx = start_idx  # Starting index of the span in the sentence
+        self.end_idx = end_idx  # Ending index of the span in the sentence
+        self.label = tokens[0].get_attribute("ner").split("-")[1]
+
+    def text(self):
+        """Returns the text of the span."""
+        return " ".join(token.get_attribute("word") for token in self.tokens)
+
+    def __repr__(self):
+        return f"('{self.text()}', [{self.start_idx},{self.end_idx}], '{self.label}')"
+
+
 class Sentence:
     def __init__(self):
         self.tokens = []
+        self.spans = []
 
     def add_token(self, token):
         self.tokens.append(token)
+
+    def _identify_spans(self):
+        current_span_tokens = []
+        start_idx = None
+
+        for i, token in enumerate(self.tokens):
+            if token.get_attribute("ner") != "O":
+                if not current_span_tokens:
+                    start_idx = i
+                current_span_tokens.append(token)
+            elif current_span_tokens:
+                self.spans.append(Span(current_span_tokens, start_idx, i - 1))
+                current_span_tokens = []
+
+        # Check for a span at the end of the sentence
+        if current_span_tokens:
+            self.spans.append(
+                Span(current_span_tokens, start_idx, len(self.tokens) - 1)
+            )
+
+    def get_spans(self):
+        return self.spans
 
     def __str__(self):
         reconstructed_sentence = ""
@@ -89,7 +129,7 @@ class Corpus:
         with open(file_path, "r", encoding="utf-8") as file:
             lines = file.read().split("\n\n")
 
-        for line in lines:
+        for line in tqdm(lines, desc="Creating Corpus"):
             sentence = Sentence()
             for token_line in line.split("\n"):
                 if token_line.strip() == "" or token_line.startswith("-DOCSTART-"):
@@ -102,15 +142,18 @@ class Corpus:
                 token = Token(**token_data)
                 sentence.add_token(token)
                 self._update_entity_index(token)
+            sentence._identify_spans()
             self._add_pos_tags(sentence)  # Add POS tags if missing
             if sentence.tokens:
                 self.add_sentence(sentence)
 
-        logging.info(f"{len(self.sentences)} sentences loaded into the corpus.")
+        logging.info(f"{len(self.sentences)} sentences loaded into the Corpus.")
 
     def _update_entity_index(self, token: Token):
         ner_tag = token.get_attribute("ner")
         if ner_tag and ner_tag != "O":
+            if ner_tag.split("-")[0]:
+                ner_tag = ner_tag.split("-")[1]
             if ner_tag not in self._entity_index:
                 self._entity_index[ner_tag] = 0
             self._entity_index[ner_tag] += 1
@@ -131,7 +174,13 @@ class Corpus:
         self.sentences.append(sentence)
 
     def filter_empty_sentences(self):
+        num_of_sentences = len(self.sentences)
         self.sentences = [sentence for sentence in self.sentences if len(sentence) > 0]
+        logging.info(
+            "Filtered out {} empty sentences.".format(
+                num_of_sentences - len(self.sentences)
+            )
+        )
 
     def export_to_conll(self, file_path: str, delimiter="\t"):
         """
