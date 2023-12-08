@@ -1,6 +1,7 @@
 import csv
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 
 import spacy
 from tqdm import tqdm
@@ -122,8 +123,13 @@ class Corpus:
         self.column_mapping = column_mapping
         self.nlp = spacy.load("en_core_web_md")
         self._entity_index = {}
-        if file_path:
-            self._load_data(file_path)
+
+        print(file_path)
+
+        if not Path(file_path).is_file():
+            raise FileNotFoundError(f"The file {file_path} does not exist.")
+
+        self._load_data(file_path)
 
     def _load_data(self, file_path):
         with open(file_path, "r", encoding="utf-8") as file:

@@ -1,0 +1,14 @@
+-DOCSTART- -X- 
+
+John B-PER
+lives O
+in O
+New B-LOC
+York I-LOC
+. O
+
+Jane B-PER
+is O
+from O
+Paris B-LOC
+. O
