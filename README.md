@@ -1,5 +1,5 @@
 
-# Noun Augmenter
+# NER Amplifier 
 
 ## Introduction to Text Augmentation
 
