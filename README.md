@@ -3,11 +3,12 @@
 
 ## Introduction to Text Augmentation
 
-Text augmentation is the process of creating synthetic textual data from existing data. It's a technique often used in Natural Language Processing (NLP) to enhance model performance, especially in situations where training data is limited. By introducing variations in the dataset, text augmentation helps in improving the robustness and generalization ability of NLP models. Common methods include synonym replacement, back translation, random insertion, deletion, and more.
+Text augmentation is the process of creating synthetic textual data from existing data. It's a technique often used in Natural Language Processing (NLP) to enhance model performance, especially in situations where training data is limited. By introducing variations in the dataset, text augmentation helps in improving the robustness and generalization ability of NLP models.
 
 ## Project Overview
 
-The NER Amplifier project provides a specialized approach to text augmentation focusing on Entity Recognition tasks. It enhances datasets by replacing nouns with synonyms or semantically similar words, using sources like WordNet, Sense2Vec, and Word2Vec models. This can be particularly useful since noun expressions can enrich the training data and potentially improve the model's accuracy and versatility.
+The NER Amplifier project provides a specialized approach to text augmentation focusing on Entity Recognition tasks. Currently, the NER Amplifier project includes an implementation for noun augmentation and we are actively working on developing and integrating other techniques, such as entity swapping-removal-replacement-insertion, as well as other token and character level augmentations. These enhancements aim to offer a comprehensive suite of tools for robust and effective data augmentation in NER tasks, ultimately contributing to the creation of more versatile and resilient NER models.
+
 
 ## Installation Guide
 
