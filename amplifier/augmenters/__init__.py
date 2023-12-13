@@ -1,3 +1,3 @@
-from .base import NounAugmenter
+from .nouns import NounAugmenter
 
 __all__ = ["NounAugmenter"]
