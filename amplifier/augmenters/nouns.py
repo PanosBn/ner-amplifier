@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
 from nltk.corpus import wordnet
@@ -14,16 +14,21 @@ logging.basicConfig(
 
 
 class NounAugmenter:
-    def __init__(self):
+    def __init__(self, corpus: Corpus):
         logging.info("Initialized Noun augmenter.")
-        pass
+        if isinstance(corpus, Corpus):
+            self.corpus = corpus
+        else:
+            raise TypeError("Expected a Corpus object.")
 
     def noun_augment_sense2vec(
-        self, text: Sentence | Corpus, model_path: Union[Path, str]
+        self,
+        model_path: Union[Path, str],
+        text: Optional[Sentence],
     ):
         """
         Augment nouns in the text with sense2vec.
-        :param text: Sentence or Corpus object
+        :param text: Sentence object
         :param model_path: Path to the sense2vec model
 
         """
@@ -33,47 +38,45 @@ class NounAugmenter:
         if not path.exists():
             raise ValueError(f"{model_path} path does not exist.")
         s2v = Sense2Vec().from_disk(path)
-        if isinstance(text, Sentence):
-            self._process_sentence(text, method="sense2vec", model=s2v)
-        elif isinstance(text, Corpus):
-            for sentence in tqdm(text.sentences, desc="Augmenting with Sense2Vec"):
-                self._process_sentence(sentence, method="sense2vec", model=s2v)
-        else:
-            raise TypeError("Expected a Sentence or Corpus object.")
+        if text and isinstance(text, Sentence):
+            return self._process_sentence(text, method="sense2vec", model=s2v)
+
+        for sentence in tqdm(self.corpus.sentences, desc="Augmenting with Sense2Vec"):
+            self._process_sentence(sentence, method="sense2vec", model=s2v)
 
     def noun_augment_word2vec(
-        self, text: Sentence | Corpus, model_path: Union[Path, str]
+        self,
+        model_path: Union[Path, str],
+        text: Optional[Sentence] = None,
     ):
         from gensim.models import KeyedVectors
 
         """
         Augment nouns in the text with word2vec.
-        :param text: Sentence or Corpus object
+        :param text: Optional Sentence object
         :param model_path: Path to the word2vec model
         """
 
         w2v = KeyedVectors.load_word2vec_format(model_path, binary=True)
 
-        if isinstance(text, Sentence):
-            self._process_sentence(text, method="word2vec", model=w2v)
-        elif isinstance(text, Corpus):
-            for sentence in tqdm(text.sentences, desc="Augmenting with Word2Vec"):
-                self._process_sentence(sentence, method="word2vec", model=w2v)
+        if text and isinstance(text, Sentence):
+            return self._process_sentence(text, method="word2vec", model=w2v)
         else:
-            raise TypeError("Expected a Sentence or Corpus object.")
+            for sentence in tqdm(
+                self.corpus.sentences, desc="Augmenting with Word2Vec"
+            ):
+                self._process_sentence(sentence, method="word2vec", model=w2v)
 
-    def noun_augment_wordnet(self, text: Sentence | Corpus):
+    def noun_augment_wordnet(self, text: Optional[Sentence] = None):
         """
         Augment nouns in the text with WordNet.
-        :param text: Sentence or Corpus object
+        :param text: Optional Sentence object
         """
-        if isinstance(text, Sentence):
-            self._process_sentence(text, method="wordnet")
-        elif isinstance(text, Corpus):
-            for sentence in tqdm(text.sentences, desc="Augmenting with WordNet"):
-                self._process_sentence(sentence, method="wordnet")
+        if text and isinstance(text, Sentence):
+            return self._process_sentence(text, method="wordnet")
         else:
-            raise TypeError("Expected a Sentence or Corpus object.")
+            for sentence in tqdm(self.corpus.sentences, desc="Augmenting with WordNet"):
+                self._process_sentence(sentence, method="wordnet")
 
     def _process_sentence(self, sentence: Sentence, method: str, model=None):
         for token in sentence.tokens:

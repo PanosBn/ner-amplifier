@@ -2,6 +2,7 @@ import csv
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+from typing import List
 
 import spacy
 from tqdm import tqdm
@@ -40,11 +41,14 @@ class Token:
 
 @dataclass
 class Span:
-    def __init__(self, tokens, start_idx, end_idx):
-        self.tokens = tokens  # A list of Token objects in the span
-        self.start_idx = start_idx  # Starting index of the span in the sentence
-        self.end_idx = end_idx  # Ending index of the span in the sentence
-        self.label = tokens[0].get_attribute("ner").split("-")[1]
+    def __init__(self, tokens: List[Token], start_idx: int, end_idx: int):
+        self.tokens = tokens
+        self.start_idx = start_idx
+        self.end_idx = end_idx
+        if tokens[0].get_attribute("ner"):
+            self.label = tokens[0].get_attribute("ner").split("-")[1]
+        else:
+            self.label = "O"
 
     def text(self):
         """Returns the text of the span."""
@@ -75,7 +79,6 @@ class Sentence:
                 self.spans.append(Span(current_span_tokens, start_idx, i - 1))
                 current_span_tokens = []
 
-        # Check for a span at the end of the sentence
         if current_span_tokens:
             self.spans.append(
                 Span(current_span_tokens, start_idx, len(self.tokens) - 1)
@@ -124,8 +127,6 @@ class Corpus:
         self.nlp = spacy.load("en_core_web_md")
         self._entity_index = {}
 
-        print(file_path)
-
         if not Path(file_path).is_file():
             raise FileNotFoundError(f"The file {file_path} does not exist.")
 
@@ -168,7 +169,6 @@ class Corpus:
         return self._entity_index
 
     def _add_pos_tags(self, sentence):
-        # Check if POS tags are needed
         needs_pos = any(token.get_attribute("pos") is None for token in sentence.tokens)
         if needs_pos:
             doc = self.nlp(sentence.__str__())
